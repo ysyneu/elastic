@@ -119,3 +119,16 @@ func (r *Request) setBodyReader(body io.Reader) error {
 	}
 	return nil
 }
+
+func (r *Request) clone() *Request {
+	nr := &Request{}
+	*nr = *r
+
+	buf := bytes.NewBuffer(nil)
+	if r.Body != nil {
+		_, _ = buf.ReadFrom(r.Body)
+		r.Body.Close()
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(buf.Bytes()))
+	}
+	return nr
+}

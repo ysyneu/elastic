@@ -130,6 +130,7 @@ type Client struct {
 	infolog                   Logger       // information log for e.g. response times
 	tracelog                  Logger       // trace log for debugging
 	deprecationlog            func(*http.Request, *http.Response)
+	customizeLog              func(context.Context, time.Time, *http.Request, *http.Response, error)
 	scheme                    string          // http or https
 	healthcheckEnabled        bool            // healthchecks enabled or disabled
 	healthcheckTimeoutStartup time.Duration   // time the healthcheck waits for a response from Elasticsearch on startup
@@ -708,6 +709,15 @@ func SetInfoLog(logger Logger) ClientOptionFunc {
 func SetTraceLog(logger Logger) ClientOptionFunc {
 	return func(c *Client) error {
 		c.tracelog = logger
+		return nil
+	}
+}
+
+// SetCustomizeLog specifies the customizeLog to use for output of HTTP requests
+// and responses which is helpful during debugging. It is nil by default.
+func SetCustomizeLog(f func(context.Context, time.Time, *http.Request, *http.Response, error)) ClientOptionFunc {
+	return func(c *Client) error {
+		c.customizeLog = f
 		return nil
 	}
 }
@@ -1354,6 +1364,8 @@ func (c *Client) PerformRequest(ctx context.Context, opt PerformRequestOptions) 
 	}
 
 	for {
+		st := time.Now()
+
 		pathWithParams := opt.Path
 		if len(opt.Params) > 0 {
 			pathWithParams += "?" + opt.Params.Encode()
@@ -1425,9 +1437,16 @@ func (c *Client) PerformRequest(ctx context.Context, opt PerformRequestOptions) 
 
 		// Tracing
 		c.dumpRequest((*http.Request)(req))
+		cpReq := req.clone()
 
 		// Get response
 		res, err := c.c.Do((*http.Request)(req).WithContext(ctx))
+
+		// Customize log
+		if c.customizeLog != nil {
+			c.customizeLog(ctx, st, (*http.Request)(cpReq), res, err)
+		}
+
 		if IsContextErr(err) {
 			// Proceed, but don't mark the node as dead
 			return nil, err
@@ -2268,6 +2287,16 @@ func (c *Client) XPackWatchStart() *XPackWatcherStartService {
 // XPackWatchStop stops a watch.
 func (c *Client) XPackWatchStop() *XPackWatcherStopService {
 	return NewXPackWatcherStopService(c)
+}
+
+// XPackSqlQuery search by sql
+func (c *Client) XPackSqlQuery() *XPackSqlQueryService {
+	return NewXPackSqlQueryService(c)
+}
+
+// XPackSqlTranslate search by sql
+func (c *Client) XPackSqlTranslate() *XPackSqlTranslateService {
+	return NewXPackSqlTranslateService(c)
 }
 
 // -- Helpers and shortcuts --

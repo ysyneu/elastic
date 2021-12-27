@@ -24,6 +24,7 @@ type Config struct {
 	Infolog     string
 	Errorlog    string
 	Tracelog    string
+	LogFunc     func()
 }
 
 // Parse returns the Elasticsearch configuration by extracting it

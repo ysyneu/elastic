@@ -129,6 +129,8 @@ func (r *Request) clone() *Request {
 		_, _ = buf.ReadFrom(r.Body)
 		r.Body.Close()
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(buf.Bytes()))
+		nr.Body = ioutil.NopCloser(buf)
 	}
+
 	return nr
 }

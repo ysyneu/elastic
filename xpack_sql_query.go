@@ -253,9 +253,9 @@ func (s *XPackSqlQueryService) Do(ctx context.Context) (*XPackSqlQueryResponse, 
 
 // XPackSqlQueryResponse is the response of XPackSqlQueryService.Do.
 type XPackSqlQueryResponse struct {
-	Columns []*Column     `json:"columns,omitempty"`
-	Rows    []interface{} `json:"rows,omitempty"`
-	Cursor  string        `json:"cursor,omitempty"`
+	Columns []*Column       `json:"columns,omitempty"`
+	Rows    [][]interface{} `json:"rows,omitempty"`
+	Cursor  string          `json:"cursor,omitempty"`
 }
 
 type Column struct {

@@ -26,7 +26,7 @@ import (
 
 const (
 	// Version is the current version of Elastic.
-	Version = "7.0.30"
+	Version = "7.0.32"
 
 	// DefaultURL is the default endpoint of Elasticsearch on the local machine.
 	// It is used e.g. when initializing a new Client without a specific URL.
@@ -1713,11 +1713,17 @@ func (c *Client) CloseIndex(name string) *IndicesCloseService {
 }
 
 // FreezeIndex freezes an index.
+//
+// Deprecated: Frozen indices are deprecated because they provide no benefit
+// given improvements in heap memory utilization.
 func (c *Client) FreezeIndex(name string) *IndicesFreezeService {
 	return NewIndicesFreezeService(c).Index(name)
 }
 
 // UnfreezeIndex unfreezes an index.
+//
+// Deprecated: Frozen indices are deprecated because they provide no benefit
+// given improvements in heap memory utilization.
 func (c *Client) UnfreezeIndex(name string) *IndicesUnfreezeService {
 	return NewIndicesUnfreezeService(c).Index(name)
 }
@@ -1798,6 +1804,8 @@ func (c *Client) Aliases() *AliasesService {
 // in https://www.elastic.co/guide/en/elasticsearch/reference/7.9/indices-templates-v1.html.
 //
 // See e.g. IndexPutIndexTemplate and IndexPutComponentTemplate for the new version(s).
+//
+// Deprecated: Legacy index templates are deprecated in favor of composable templates.
 func (c *Client) IndexGetTemplate(names ...string) *IndicesGetTemplateService {
 	return NewIndicesGetTemplateService(c).Name(names...)
 }
@@ -1808,6 +1816,8 @@ func (c *Client) IndexGetTemplate(names ...string) *IndicesGetTemplateService {
 // in https://www.elastic.co/guide/en/elasticsearch/reference/7.9/indices-templates-v1.html.
 //
 // See e.g. IndexPutIndexTemplate and IndexPutComponentTemplate for the new version(s).
+//
+// Deprecated: Legacy index templates are deprecated in favor of composable templates.
 func (c *Client) IndexTemplateExists(name string) *IndicesExistsTemplateService {
 	return NewIndicesExistsTemplateService(c).Name(name)
 }
@@ -1818,6 +1828,8 @@ func (c *Client) IndexTemplateExists(name string) *IndicesExistsTemplateService 
 // in https://www.elastic.co/guide/en/elasticsearch/reference/7.9/indices-templates-v1.html.
 //
 // See e.g. IndexPutIndexTemplate and IndexPutComponentTemplate for the new version(s).
+//
+// Deprecated: Legacy index templates are deprecated in favor of composable templates.
 func (c *Client) IndexPutTemplate(name string) *IndicesPutTemplateService {
 	return NewIndicesPutTemplateService(c).Name(name)
 }
@@ -1828,6 +1840,8 @@ func (c *Client) IndexPutTemplate(name string) *IndicesPutTemplateService {
 // in https://www.elastic.co/guide/en/elasticsearch/reference/7.9/indices-templates-v1.html.
 //
 // See e.g. IndexPutIndexTemplate and IndexPutComponentTemplate for the new version(s).
+//
+// Deprecated: Legacy index templates are deprecated in favor of composable templates.
 func (c *Client) IndexDeleteTemplate(name string) *IndicesDeleteTemplateService {
 	return NewIndicesDeleteTemplateService(c).Name(name)
 }

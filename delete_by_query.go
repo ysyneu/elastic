@@ -192,7 +192,7 @@ func (s *DeleteByQueryService) AbortOnVersionConflict() *DeleteByQueryService {
 	return s
 }
 
-// ProceedOnVersionConflict aborts the request on version conflicts.
+// ProceedOnVersionConflict proceeds the request on version conflicts.
 // It is an alias to setting Conflicts("proceed").
 func (s *DeleteByQueryService) ProceedOnVersionConflict() *DeleteByQueryService {
 	s.conflicts = "proceed"
@@ -787,6 +787,6 @@ type bulkIndexByScrollResponseFailure struct {
 	Status int    `json:"status,omitempty"`
 	Shard  int    `json:"shard,omitempty"`
 	Node   int    `json:"node,omitempty"`
-	// TOOD "cause" contains exception details
-	// TOOD "reason" contains exception details
+	// TODO "cause" contains exception details
+	// TODO "reason" contains exception details
 }

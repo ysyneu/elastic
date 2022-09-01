@@ -8,11 +8,11 @@
 //
 // Scroll through an index called "products".
 //
-//     search -index=products -size=100
+//     ./search_with_point_in_time -index=products -size=100
 //
 // If you don't have an index, use the "populate" command to fill one.
 //
-//     search -index=products populate
+//     ./search_with_point_in_time -index=products populate
 //
 package main
 
@@ -79,7 +79,7 @@ func main() {
 		).
 		Size(*size).
 		PointInTime(
-			elastic.NewPointInTime(pit.Id, "2m"),
+			elastic.NewPointInTimeWithKeepAlive(pit.Id, "2m"),
 		).
 		Do(context.Background())
 	if err != nil {

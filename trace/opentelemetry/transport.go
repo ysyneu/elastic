@@ -2,13 +2,14 @@
 // Use of this source code is governed by a MIT-license.
 // See http://olivere.mit-license.org/license.txt for details.
 
-package opentracing
+package opentelemetry
 
 import (
 	"net/http"
 
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 )
 
 // Transport for tracing Elastic operations.
@@ -41,15 +42,23 @@ func NewTransport(opts ...Option) *Transport {
 // RoundTrip captures the request and starts an OpenTracing span
 // for Elastic PerformRequest operation.
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
-	span, ctx := opentracing.StartSpanFromContext(req.Context(), "PerformRequest")
-	req = req.WithContext(ctx)
-	defer span.Finish()
+	ctx, span := otel.Tracer("Elastic").Start(req.Context(), "PerformRequest")
+	defer span.End()
 
-	ext.Component.Set(span, "github.com/olivere/elastic/v7")
-	ext.HTTPUrl.Set(span, req.URL.Redacted())
-	ext.HTTPMethod.Set(span, req.Method)
-	ext.PeerHostname.Set(span, req.URL.Hostname())
-	ext.PeerPort.Set(span, atouint16(req.URL.Port()))
+	req = req.WithContext(ctx)
+
+	// See General (https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/span-general.md)
+	// and HTTP (https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/http.md)
+	span.SetAttributes(
+		attribute.String("code.namespace", "github.com/olivere/elastic/v7"),
+		attribute.String("code.function", "PerformRequest"),
+		attribute.String("http.url", req.URL.Redacted()),
+		attribute.String("http.method", req.Method),
+		attribute.String("http.scheme", req.URL.Scheme),
+		attribute.String("http.host", req.URL.Hostname()),
+		attribute.String("http.path", req.URL.Path),
+		attribute.String("http.user_agent", req.UserAgent()),
+	)
 
 	var (
 		resp *http.Response
@@ -61,10 +70,11 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 		resp, err = http.DefaultTransport.RoundTrip(req)
 	}
 	if err != nil {
-		ext.Error.Set(span, true)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 	}
 	if resp != nil {
-		ext.HTTPStatusCode.Set(span, uint16(resp.StatusCode))
+		span.SetAttributes(attribute.Int64("http.status_code", int64(resp.StatusCode)))
 	}
 
 	return resp, err
